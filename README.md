@@ -41,3 +41,15 @@ On peut maintenant se concentrer sur le principal du projet. On pourra réutilis
 ## Idées bonus
 > 1. [ ] Rajouter du son au jeu. Une musique, des effets sonores, juste assez pour rendre plus immersif. Je ne sais pas tout comment le faire ;)
 > 2. [ ] Utiliser delta. La vitesse du jeu (écoulement temps, vitesse joueur, vitesse ennemis...) ne doit pas dépendre du nombre de frames par seconde.
+> 3. [ ] optimisation ???
+> 4. [ ] -> pour ne pas avoir à reload toute la minimap, peut-etre ne pas afficher les tiles qui passeraient par dessus la minimap ?
+> 5. [ ] afficher toutes les cases en 64x64, ne pas les faire dependre de temp_radius
+> 6. [ ] combiner images en une seule surface (pour minimap)
+> 7. [ ] stocker tout ce qui n'a pas besoin d'être recalculé !!! (arrêter de recalculer les real_positions, arrêter de calculer le nombre de tiles et de changer la taille des surfaces quand temp_size ne change pas...)
+> 8. [ ] problème avec load_minimap_v2() : j'essaie de dessiner les tiles comme si je le faisais sur self.game.screen, alors que c'est une surface avec des dimensions différentes. Peut-être que le problème vient de là ?
+> 9. [ ] modifier la méthode pour charger la zone actuelle ? Charger par "chunks" pour ne pas avoir à tout recharger à chaque déplacement de caméra ?
+> 10. [ ] Découper map encore + que par tiles, pour rendre déplacement de caméra plus fluide et permettre au joueur de se déplacer sur une seule tile (ex : diviser chaque tile par 4 pour joueur, et pour caméra juste déplacer tiles affichés d'un certain nombre de pixels qui dépend de delta plutôt que de faire 1 déplacement = 1 tile)
+
+
+
+A faire : cases en 64x64 + essayer d'utiliser delta ?

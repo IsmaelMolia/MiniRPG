@@ -1,6 +1,7 @@
 import pygame
-from config import *
-from game.map import Map
+from config import W, H, FPS, TILE_SIZE
+from .map import Map
+from .world import World, Rendering
 
 class Game:
     def __init__(self):
@@ -13,15 +14,11 @@ class Game:
         self.delta = 0
 
         self.map = Map(self)
-        #self.map.load_entire_map()
-        #self.map.show_entire_map()
-        #"""
-        self.map.load_current_zone()
-        self.map.show_current_zone()
-        self.map.load_minimap()
-        self.map.show_minimap()
-        self.map.show_position_on_minimap()
-        #"""
+        #self.world = World(self)
+
+        # self.player = Player()
+    
+        self.rendering = Rendering(self)
 
     def check_events(self):
         for event in pygame.event.get():
@@ -38,7 +35,7 @@ class Game:
         elif keys[pygame.K_z]:
             self.map.change_position(1, coeff=-1)
 
-    def game_loop(self):
+    def loop(self):
         while self.playing:
             # logique jeu
             
@@ -49,8 +46,9 @@ class Game:
             #pygame.draw.rect(self.screen, "black", (0, 0, self.w, self.h))
             #self.screen.fill(("black"))
             #self.map.show_entire_map()
+            #self.rendering.render()
             pygame.display.update()
 
             # délai
-            self.delta = self.clock.tick(60)
-            print(self.delta)
+            self.delta = self.clock.tick(FPS)
+            #print(self.delta)
