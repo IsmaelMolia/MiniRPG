@@ -1,7 +1,14 @@
 import pygame
-from config import W, H, FPS, TILE_SIZE
-from .map import Map
-from .world import World, Rendering
+from config import W, H, FPS, TILE_SIZE, MAP_GROUND_FILE_PATH, CAMERA_SPEED
+
+
+class Game:
+    pass
+
+
+from .world import World
+from .rendering import Rendering
+
 
 class Game:
     def __init__(self):
@@ -13,8 +20,7 @@ class Game:
         self.clock = pygame.time.Clock()
         self.delta = 0
 
-        self.map = Map(self)
-        #self.world = World(self)
+        self.world = World(self, MAP_GROUND_FILE_PATH)
 
         # self.player = Player()
     
@@ -27,13 +33,13 @@ class Game:
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_d]:
-            self.map.change_position(0)
-        elif keys[pygame.K_q]:
-            self.map.change_position(0, coeff=-1)
+            self.rendering.change_offset(dx=-CAMERA_SPEED)
+        if keys[pygame.K_q]:
+            self.rendering.change_offset(dx=CAMERA_SPEED)
         if keys[pygame.K_s]:
-            self.map.change_position(1)
-        elif keys[pygame.K_z]:
-            self.map.change_position(1, coeff=-1)
+            self.rendering.change_offset(dy=-CAMERA_SPEED)
+        if keys[pygame.K_z]:
+            self.rendering.change_offset(dy=CAMERA_SPEED)
 
     def loop(self):
         while self.playing:
@@ -43,12 +49,19 @@ class Game:
             self.check_events()
 
             # affichage
-            #pygame.draw.rect(self.screen, "black", (0, 0, self.w, self.h))
-            #self.screen.fill(("black"))
             #self.map.show_entire_map()
-            #self.rendering.render()
+            self.rendering.render()
             pygame.display.update()
 
             # délai
             self.delta = self.clock.tick(FPS)
             #print(self.delta)
+
+
+# TODO: pouvoir changer taille tiles (TILE_SIZE) sans bugs 
+#       -> problème : assets_loader ne permet pas de changer leurs tailles ? ajouter une méthode qui s'en occupe quand map créée ?
+# TODO: régler bugs render_ground()
+# TODO: mettre format normal minimap ? (actuellement convertie pour avoir meme forme que l'ecran)
+# TODO: vérifier que la position de joueur sur la minimap est la bonne, vérifier qu'il n'y a pas d'erreurs dans le calcul
+# TODO: retirer 'ADDED_SAFETY_TILES' parce que cette variable n'a aucun sens ??
+# TODO: à chaque fois que je fais un calcul compliqué, peut-être écrire son explication en commentaire ou dans la documentation ?
