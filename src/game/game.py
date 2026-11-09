@@ -65,3 +65,8 @@ class Game:
 # TODO: vérifier que la position de joueur sur la minimap est la bonne, vérifier qu'il n'y a pas d'erreurs dans le calcul
 # TODO: retirer 'ADDED_SAFETY_TILES' parce que cette variable n'a aucun sens ??
 # TODO: à chaque fois que je fais un calcul compliqué, peut-être écrire son explication en commentaire ou dans la documentation ?
+# TODO: peut-être mettre la taille de chaque asset dans ASSETS_SIZES pour ne pas avoir à le faire dans d'autres parties du code ?
+# TODO: représenter le cadre de l'écran sur la minimap (plutôt que le centre de l'écran) (on rajoutera plus tard la position du joueur, qui ne sera pas forcément au centre de l'écran ?)
+# TODO: pourquoi le chargement de la minimap devient + long quand TILE_SIZE est + élevé ?? ça devrait être l'inverse non ??
+# TODO: dans rendering, à la fin de .compute_minimap(), il faudrait stocker minimap_tile_size avec sa vraie taille 
+#       (et non sa taille au moment où elle a été utilisée sur big_minimap), et donc changer le code affecté par 'minimap_tile_size'
