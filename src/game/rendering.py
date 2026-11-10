@@ -1,6 +1,6 @@
 
 import pygame
-from config import MINIMAP_SIZE_DIVIDER, MINIMAP_TILES_LOADING_SIZE, TILE_SIZE, ADDED_SAFETY_TILES, MINIMAP_PLAYER_SCALE, MINIMAP_PLAYER_COLOR, MINIMAP_CAMERA_INDICATOR_WITDH
+from config import MINIMAP_CURRENT_FORMAT, MINIMAP_DECALAGE, MINIMAP_SIZE_DIVIDER, TILE_SIZE, ADDED_SAFETY_TILES, MINIMAP_CAMERA_INDICATOR_COLOR, MINIMAP_CAMERA_INDICATOR_WITDH, MINIMAP_CAMERA_INDICATOR_ADDED_SIZE, MINIMAP_BORDER_COLOR, MINIMAP_BORDER_WIDTH
 from assets_loader import assets
 from ui.loading_bar import loading_bar_console
 from .game import Game
@@ -25,43 +25,47 @@ class Rendering:
         return n
 
     def compute_minimap(self):
-        big_minimap = pygame.Surface((self.game.w, self.game.h))
-        temp_factor = MINIMAP_SIZE_DIVIDER
-    
+        size_divider = MINIMAP_SIZE_DIVIDER
         ground = self.game.world.ground
         blocks_number = self.game.world.blocks_size
-        tile_size_x, tile_size_y = self.game.w / blocks_number[0], self.game.h / blocks_number[1]
         total_blocks = blocks_number[0] * blocks_number[1]
+        
+        temp_minimap_size = (blocks_number[0], blocks_number[1]) # so that every loaded tile image will have a size of 1
+        temp_minimap = pygame.Surface(temp_minimap_size)
+        temp_tile_size = (1, 1)
+        # the equivalent of doing (temp_minimap_size[0] / blocks_number[0], temp_minimap_size[1] / blocks_number[1])
+        # also, 1x1 is the minimum pygame.Surface size (i think that going lower or using a float will cause bugs) 
 
-        tile_loading_size = MINIMAP_TILES_LOADING_SIZE
         for y, line in enumerate(ground):
             for x, tile in enumerate(line):
-                #big_minimap.blit(assets.get(tile), (x * tile_size_x, y * tile_size_y))
+                temp_minimap.blit(pygame.transform.smoothscale(assets.get_original(tile), temp_tile_size), (x * temp_tile_size[0], y * temp_tile_size[1]))
+                loading_bar_console((x+1 + y * blocks_number[0])/total_blocks, "minimap")
 
-                #big_minimap.blit(pygame.transform.smoothscale(assets.get(tile), (tile_loading_size, tile_loading_size)), (x * tile_size_x, y * tile_size_y))
-                # blitting the images with a size of 8x8 (tile_loading_size = 8) is better because it takes a lot less time and it gives the same result.
-                # -> if the images are blitted with their original size (64x64) or higher, it makes "big_minimap" contain much more information, 
-                #    thus increasing the time it takes to create it by a lot.
-                # -> if the images blitted are less than 8x8, they will be slightly cropped, and there will be black lines across the minimap. 
+        format = MINIMAP_CURRENT_FORMAT
+        horizontal_size = self.game.w / size_divider
+        minimap_size = (horizontal_size * format[0], horizontal_size * format[1])
 
-                #big_minimap.blit(assets.get_original(tile), (x * tile_size_x, y * tile_size_y))
-                # if we directly load the original image instead of transforming a 1024x1024 image to a 8x8 (for example),
-                # we gain a lot of performance.
-                # it also makes that the minimap always takes the same time to load, no matter the TILE_SIZE.
-                # the only problem is that it takes more memory, with AssetsLoader.assets_original_sizes.
+        self.minimap = pygame.transform.smoothscale(temp_minimap, minimap_size)
+        self.minimap_position = (self.game.w - minimap_size[0] - MINIMAP_BORDER_WIDTH - MINIMAP_DECALAGE[0], MINIMAP_BORDER_WIDTH + MINIMAP_DECALAGE[1])
+        self.minimap_tile_size = (minimap_size[0] / blocks_number[0], minimap_size[1] / blocks_number[1])
 
-                big_minimap.blit(pygame.transform.smoothscale(assets.get_original(tile), (tile_loading_size, tile_loading_size)), (x * tile_size_x, y * tile_size_y))
-                # we can combine those 2 ideas (8x8 blit + original image) to improve performance even more.
-                # this means that instead of having to do a pygame.transform.smoothscale() from a 1024x1024 to a 8x8 image (for example),
-                # or blitting a 64x64 directly, we can transform.smoothscale() a 64x64 to a 8x8 and then .blit() it, which is way faster.
-                # the only problem is that it takes more memory, with AssetsLoader.assets_original_sizes.
-                
-                loading_bar_console((x+1 + (y) * blocks_number[0])/total_blocks, "minimap")
-    
-        minimap_size = (self.game.w / temp_factor, self.game.h / temp_factor)
-        self.minimap = pygame.transform.smoothscale(big_minimap, minimap_size)
-        self.minimap_position = (self.game.w - self.game.w / temp_factor, 0)
-        self.minimap_tile_size = (tile_size_x, tile_size_y) # to get the actual size in pixels it needs to be divided by MINIMAP_SIZE_DIVIDER.
+        self.camera_rect_on_minimap = (
+            self.minimap_position[0] - ((self.offset_x / TILE_SIZE - ADDED_SAFETY_TILES + MINIMAP_CAMERA_INDICATOR_ADDED_SIZE) * self.minimap_tile_size[0]),
+            self.minimap_position[1] - ((self.offset_y / TILE_SIZE - ADDED_SAFETY_TILES + MINIMAP_CAMERA_INDICATOR_ADDED_SIZE) * self.minimap_tile_size[1]),
+            ((self.game.w // TILE_SIZE + ADDED_SAFETY_TILES * 2 + MINIMAP_CAMERA_INDICATOR_ADDED_SIZE * 2) * self.minimap_tile_size[0]),
+            ((self.game.h // TILE_SIZE + ADDED_SAFETY_TILES * 2 + MINIMAP_CAMERA_INDICATOR_ADDED_SIZE * 2) * self.minimap_tile_size[1]),
+        )
+
+        self.minimap_border = (
+            MINIMAP_BORDER_COLOR, # the color
+            (
+                self.minimap_position[0] - MINIMAP_BORDER_WIDTH,
+                self.minimap_position[1] - MINIMAP_BORDER_WIDTH,
+                minimap_size[0] + MINIMAP_BORDER_WIDTH * 2,
+                minimap_size[1] + MINIMAP_BORDER_WIDTH * 2,
+            ), # the rect
+            MINIMAP_BORDER_WIDTH, # the width (without it, the rect will be filled and will hide the minimap)
+        )
 
     def change_offset(self, *, dx: int = 0, dy: int = 0):
         self.offset_x = self.__clamp(self.offset_x + dx, -self.max_x, 0)
@@ -70,6 +74,7 @@ class Rendering:
     def render_ground(self):
         ground = self.game.world.ground
         blocks = self.game.world.blocks_size
+        
         x, max_x = -(self.offset_x // TILE_SIZE) - ADDED_SAFETY_TILES, -(self.offset_x // TILE_SIZE) + self.game.w // TILE_SIZE + ADDED_SAFETY_TILES
         y, max_y = -(self.offset_y // TILE_SIZE) - ADDED_SAFETY_TILES, -(self.offset_y // TILE_SIZE) + self.game.h // TILE_SIZE + ADDED_SAFETY_TILES
         
@@ -86,13 +91,7 @@ class Rendering:
         
         while y <= max_y:
             while x <= max_x:
-                self.game.screen.blit(
-                    assets.get(ground[y][x]), 
-                    (
-                        x * TILE_SIZE + self.offset_x,
-                        y * TILE_SIZE + self.offset_y
-                    )
-                )
+                self.game.screen.blit(assets.get(ground[y][x]), (x * TILE_SIZE + self.offset_x, y * TILE_SIZE + self.offset_y))
                 x += 1
             y += 1
             x = initial_x
@@ -102,29 +101,16 @@ class Rendering:
 
     def render_minimap(self):
         self.game.screen.blit(self.minimap, self.minimap_position)
-        
-        """
-        player_rect_on_minimap = (
-            self.minimap_position[0] - (((self.offset_x / TILE_SIZE) - (self.game.w / TILE_SIZE) / 2) * self.minimap_tile_size[0]) / MINIMAP_SIZE_DIVIDER - MINIMAP_PLAYER_SCALE / 2,
-            self.minimap_position[1] - (((self.offset_y / TILE_SIZE) - (self.game.h / TILE_SIZE) / 2) * self.minimap_tile_size[1]) / MINIMAP_SIZE_DIVIDER - MINIMAP_PLAYER_SCALE / 2,
-            # dans l'ordre :
-            #   - self.minimap_position[0] et self.minimap_position[1] : pour ajouter la position de l'angle supérieur gauche de la minimap
-            #   - self.offset_x / TILE_SIZE et self.offset_y / TILE_SIZE : pour obtenir les coordonées de la tile actuelle (par rapport au nombre total de tiles)
-            #   - (self.game.w / TILE_SIZE) / 2 et (self.game.h / TILE_SIZE) / 2 pour que la position représente ce qui est au centre de l'écran et non l'angle supérieur gauche
-            #   - *self_minimap_tile_size[0] et *self_minimap_tile_size[1] pour convertir les coordonnées de la tile en pixels
-            #   - /MINIMAP_SIZE_DIVIDER pour mettre à l'échelle de la minimap
-            #   - MINIMAP_PLAYER_SCALE / 2 parce qu'on dessine un rectangle, et en retirant la moitié de sa taille on fait en sorte que son centre représente le milieu de l'écran
-        )
-        pygame.draw.rect(self.game.screen, MINIMAP_PLAYER_COLOR, (player_rect_on_minimap[0], player_rect_on_minimap[1], MINIMAP_PLAYER_SCALE, MINIMAP_PLAYER_SCALE))
-        """
 
-        camera_rect_on_minimap = (
-            self.minimap_position[0] - ((self.offset_x / TILE_SIZE - ADDED_SAFETY_TILES) * self.minimap_tile_size[0]) / MINIMAP_SIZE_DIVIDER,
-            self.minimap_position[1] - ((self.offset_y / TILE_SIZE - ADDED_SAFETY_TILES) * self.minimap_tile_size[1]) / MINIMAP_SIZE_DIVIDER,
-            ((self.game.w // TILE_SIZE + ADDED_SAFETY_TILES * 2) * self.minimap_tile_size[0]) / MINIMAP_SIZE_DIVIDER,
-            ((self.game.h // TILE_SIZE + ADDED_SAFETY_TILES * 2) * self.minimap_tile_size[1]) / MINIMAP_SIZE_DIVIDER,
+        self.camera_rect_on_minimap = (
+            self.minimap_position[0] - ((self.offset_x / TILE_SIZE - ADDED_SAFETY_TILES + MINIMAP_CAMERA_INDICATOR_ADDED_SIZE) * self.minimap_tile_size[0]),
+            self.minimap_position[1] - ((self.offset_y / TILE_SIZE - ADDED_SAFETY_TILES + MINIMAP_CAMERA_INDICATOR_ADDED_SIZE) * self.minimap_tile_size[1]),
+            self.camera_rect_on_minimap[2],
+            self.camera_rect_on_minimap[3],
         )
-        pygame.draw.rect(self.game.screen, MINIMAP_PLAYER_COLOR, camera_rect_on_minimap, width=MINIMAP_CAMERA_INDICATOR_WITDH)
+        pygame.draw.rect(self.game.screen, MINIMAP_CAMERA_INDICATOR_COLOR, self.camera_rect_on_minimap, width=MINIMAP_CAMERA_INDICATOR_WITDH)
+
+        pygame.draw.rect(self.game.screen, self.minimap_border[0], self.minimap_border[1], width=self.minimap_border[2])
         
     def render(self):
         self.game.screen.fill(("black"))

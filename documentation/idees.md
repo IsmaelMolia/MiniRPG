@@ -51,5 +51,3 @@ On peut maintenant se concentrer sur le principal du projet. On pourra réutilis
 > 10. [ ] Découper map encore + que par tiles, pour rendre déplacement de caméra plus fluide et permettre au joueur de se déplacer sur une seule tile (ex : diviser chaque tile par 4 pour joueur, et pour caméra juste déplacer tiles affichés d'un certain nombre de pixels qui dépend de delta plutôt que de faire 1 déplacement = 1 tile)
 
 
-
-A faire : cases en 64x64 + essayer d'utiliser delta ?
