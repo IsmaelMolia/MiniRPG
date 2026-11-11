@@ -12,6 +12,8 @@ ASSETS_SIZES                        = {
 # cartes
 MAP_CSV_FILES_PATH                  = f'{ASSETS_PATH}/cartes'
 MAP_GROUND_FILE_PATH                = f'{MAP_CSV_FILES_PATH}/monde_sol.csv'
+MAP_DECORS_FILE_PATH                = f'{MAP_CSV_FILES_PATH}/monde_decors.csv'
+MAP_OBJECTS_PATH                    = f"{MAP_CSV_FILES_PATH}/monde_objets.csv"
 
 # world loading
 MINIMAP_SIZE_DIVIDER                = 5
@@ -35,5 +37,12 @@ MINIMAP_BORDER_WIDTH                = 4 # en pixels
 # optional setting to increase the size of the camera indicator
 
 # camera
-CAMERA_SPEED                        = 50 # en pixels
+CAMERA_SPEED                        = 3 # multipliée par delta, puis donne une valeur en pixels
+'''To be multiplied by game.delta.'''
 # plus TILE_SIZE sera élevée plus la vitesse sera lente (car l'offset maximum sera plus grand)
+# il faut savoir que cette valeur sera multipliée par delta, donc par (1000 / FPS) quand il n'y a pas de lag.
+
+# temporary
+GLOBAL_SIZE_FACTOR = 1
+W, H = round(W * GLOBAL_SIZE_FACTOR), round(H * GLOBAL_SIZE_FACTOR)
+TILE_SIZE = round(TILE_SIZE * GLOBAL_SIZE_FACTOR)

@@ -1,8 +1,7 @@
 import pygame
-import time
 
 from config import ASSETS_PATH, ASSETS_SIZES
-from ui.loading_bar import loading_bar_console
+from task import Task
 
 
 class AssetsLoader:
@@ -39,7 +38,9 @@ class AssetsLoader:
             total_files = len(filenames)
             for index, f in enumerate(filenames):
                 self.get_with_size(f, size)
-                loading_bar_console((index+1)/total_files, title)
+                #loading_bar_console((index+1)/total_files, title, wait=True)
+                #loading_bar_console(None, (index+1)/total_files, title, wait=True)
+                Task.get(title).set_progess((index+1)/total_files).print_loading_bar()
             return
 
         for f in filenames:

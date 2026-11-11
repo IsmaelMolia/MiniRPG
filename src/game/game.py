@@ -1,5 +1,6 @@
 import pygame
-from config import W, H, FPS, TILE_SIZE, MAP_GROUND_FILE_PATH, CAMERA_SPEED
+import time
+from config import W, H, FPS, MAP_GROUND_FILE_PATH, MAP_DECORS_FILE_PATH, MAP_OBJECTS_PATH, CAMERA_SPEED
 
 
 class Game:
@@ -17,10 +18,13 @@ class Game:
         self.w, self.h = W, H
         self.screen = pygame.display.set_mode((self.w, self.h))
 
+        self.fps = FPS
+        self.camera_speed = int(CAMERA_SPEED * (1000 / FPS))
+
         self.clock = pygame.time.Clock()
         self.delta = 0
 
-        self.world = World(self, MAP_GROUND_FILE_PATH)
+        self.world = World(self, MAP_GROUND_FILE_PATH, MAP_DECORS_FILE_PATH, MAP_OBJECTS_PATH)
 
         # self.player = Player()
     
@@ -33,13 +37,13 @@ class Game:
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_d]:
-            self.rendering.change_offset(dx=-CAMERA_SPEED)
+            self.rendering.change_offset(dx=-self.camera_speed)
         if keys[pygame.K_q]:
-            self.rendering.change_offset(dx=CAMERA_SPEED)
+            self.rendering.change_offset(dx=self.camera_speed)
         if keys[pygame.K_s]:
-            self.rendering.change_offset(dy=-CAMERA_SPEED)
+            self.rendering.change_offset(dy=-self.camera_speed)
         if keys[pygame.K_z]:
-            self.rendering.change_offset(dy=CAMERA_SPEED)
+            self.rendering.change_offset(dy=self.camera_speed)
 
     def loop(self):
         while self.playing:
@@ -53,9 +57,9 @@ class Game:
             pygame.display.update()
 
             # délai
-            self.delta = self.clock.tick(FPS)
+            self.delta = self.clock.tick(self.fps)
+            self.camera_speed = int(CAMERA_SPEED * self.delta)
             #print(self.delta)
-            #print(self.delta, end=" ", flush=True)
-
+            #print(self.camera_speed)
 
 # les TODO ont étés déplacés dans 'documentation/todo.md'.
