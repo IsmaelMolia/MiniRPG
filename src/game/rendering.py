@@ -26,7 +26,7 @@ class Rendering:
 
     def compute_minimap(self):
         size_divider = MINIMAP_SIZE_DIVIDER
-        ground = self.game.world.ground
+        ground = self.game.world.world_storage['ground']
         blocks_number = self.game.world.blocks_size
         total_blocks = blocks_number[0] * blocks_number[1]
         
@@ -36,14 +36,10 @@ class Rendering:
         # the equivalent of doing (temp_minimap_size[0] / blocks_number[0], temp_minimap_size[1] / blocks_number[1])
         # also, 1x1 is the minimum pygame.Surface size (i think that going lower or using a float will cause bugs) 
 
-        #self.game.use_timer('compute_minimap') # creates a timer
         for y, line in enumerate(ground):
             for x, tile in enumerate(line):
                 temp_minimap.blit(pygame.transform.smoothscale(assets.get_original(tile), temp_tile_size), (x * temp_tile_size[0], y * temp_tile_size[1]))
-                #loading_bar_console((x+1 + y * blocks_number[0])/total_blocks, "minimap", time_taken=self.game.get_time('compute_minimap'))
-                # loading_bar_console(self.game, , "minimap", time_taken=)
-                Task.get('compute_minimap').set_progess((x + 1 + y * blocks_number[0]) / total_blocks).print_loading_bar()
-        #del self.game.timers['compute_minimap'] # deletes the timer
+                Task.get('minimap').set_progess((x + 1 + y * blocks_number[0]) / total_blocks).print_loading_bar()
 
         format = MINIMAP_CURRENT_FORMAT
         horizontal_size = self.game.w / size_divider
@@ -103,17 +99,17 @@ class Rendering:
 
         if type(things) == list:
             def get_element(x, y):
-                try:
-                    return things[y][x]
-                except IndexError:
-                    pass
+                if y < 0 or y >= len(things):
+                    return
+                if x < 0 or x >= len(things[y]):
+                    return
+                return things[y][x]
         
         elif type(things) == dict:
             def get_element(x, y):
-                try:
-                    return things[(x, y)]
-                except KeyError:
-                    pass
+                if (x, y) not in things.keys():
+                    return
+                return things[(x, y)]
 
         while y <= max_y:
             while x <= max_x:
@@ -126,20 +122,11 @@ class Rendering:
             x = initial_x
 
         return visible_things
-                    
-    def render_ground(self):
-        ground = self.game.world.ground
-        tiles_to_render = self.get_visible_things(ground)
 
-        for tile, pos in tiles_to_render:
-            self.game.screen.blit(assets.get(tile), pos)
-
-    def render_objects(self):
-        objects = self.game.world.objects
-        objects_to_render = self.get_visible_things(objects)
-
-        for object, pos in objects_to_render:
-            self.game.screen.blit(assets.get(object), pos)
+    def render_things(self, things : list | dict):
+        things_to_render = self.get_visible_things(things)
+        for thing, position in things_to_render:
+            self.game.screen.blit(assets.get(thing), position)
 
     def render_player(self):
         pass # TODO: Make the render_player() method
@@ -159,7 +146,7 @@ class Rendering:
         
     def render(self):
         self.game.screen.fill(("black"))
-        self.render_ground()
-        self.render_objects()
+        self.render_things(self.game.world.world_storage['ground']) # renders tiles and decors
+        self.render_things(self.game.world.world_storage['objects']) # renders objects
         self.render_player()
         self.render_minimap()

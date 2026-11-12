@@ -38,8 +38,6 @@ class AssetsLoader:
             total_files = len(filenames)
             for index, f in enumerate(filenames):
                 self.get_with_size(f, size)
-                #loading_bar_console((index+1)/total_files, title, wait=True)
-                #loading_bar_console(None, (index+1)/total_files, title, wait=True)
                 Task.get(title).set_progess((index+1)/total_files).print_loading_bar()
             return
 

@@ -8,56 +8,63 @@ from .game import Game
 class World:
     def __init__(self, game: Game, ground_filepath: str, decors_filepath: str, objects_filepath: str):
         self.game = game
-        self.ground_filepath = ground_filepath
-        self.decors_filepath = decors_filepath
-        self.objects_filepath = objects_filepath
 
-        self.ground: list[list[str]] = []
-        '''Contains ground assets name'''
-        self.blocks_size: tuple[int, int] = (-1, -1) # computed with World.load_ground()
-        '''In blocks'''
-        self.objects: dict[tuple, str] = {}
+        self.filepaths = {
+            'ground': ground_filepath,
+            'decors': decors_filepath,
+            'objects': objects_filepath,
+        }
+
+        self.world_storage = {
+            'ground': [],       # list[list[str]]
+            'objects': {},      # dict[tuple, str]
+        }
+
         #self.obstacles: list[Obstacles] = [] # TODO: Create Obstacles class
         #self.entities: list[Entity] = [] # TODO: Create Entity class
 
-        self.load_ground()
-        self.load_decors()
-        self.load_obstacles()
+        self.blocks_size: tuple[int, int] = (-1, -1) # computed with World.load_ground()
+        '''In blocks'''
 
-    def load_ground(self):
+        self.load_things('ground')
+        self.load_things('decors', 'ground')
+        self.load_things('objects')
+        self.blocks_size = (len(self.world_storage['ground'][0]), len(self.world_storage['ground']))
+
+    def load_things(self, filepath_name: str, storage_name: str | None = None):
+        filepath = self.filepaths[filepath_name]
+        if storage_name == None:
+            storage_name = filepath_name
+        where_to_store = self.world_storage[storage_name]
+
+        if type(where_to_store) == list:
+            def store_element(storage: list, pos, element):
+                '''
+                This version of the function is for a list.
+                - If the row (pos[1]) doesn't exist, a new row will be added.
+                - If the element's index (pos[0] doesn't exist, it will be added to the last row.
+                - But if the row and the element's index are within the list, the element will replace the value that is currently at this position. 
+                '''
+                if pos[1] < 0 or pos[1] >= len(storage):
+                    storage.append([])
+                if pos[0] < 0 or pos[0] >= len(storage[pos[1]]):
+                    storage[-1].append(element)
+                storage[pos[1]][pos[0]] = element
+        elif type(where_to_store) == dict:
+            def store_element(storage: dict, pos, element):
+                '''
+                This version of the function is for a dict. 
+                - It only needs to set "pos" as the key and "element" as the value.
+                '''
+                storage[pos] = element
+
         filenames = []
-        with open(self.ground_filepath, 'r') as f:
-            for ligne in csv.reader(f):
-                tiles = []
-                for t in ligne:
-                    tiles.append(t)
-                    if t not in filenames:
-                        filenames.append(t)
-                self.ground.append(tiles)
-            self.blocks_size = (len(self.ground[0]), len(self.ground)) # marche seulement avec une map rectangulaire
-
-        assets.load_multiple_assets(filenames, (TILE_SIZE, TILE_SIZE), 'ground assets')
-
-    def load_decors(self):
-        filenames = []
-        with open(self.decors_filepath, 'r') as f:
+        with open(filepath, 'r') as f:
             for iy, ligne in enumerate(csv.reader(f)):
-                for ix, decor in enumerate(ligne):
-                    if len(decor) > 1:
-                        self.ground[iy][ix] = decor # remplace les tiles par le décor qui est dessus
-                        if decor not in filenames:
-                            filenames.append(decor)
-        
-        assets.load_multiple_assets(filenames, (TILE_SIZE, TILE_SIZE), 'decors assets')
+                for ix, element in enumerate(ligne):
+                    if len(element) > 1:
+                        store_element(where_to_store, (ix, iy), element)
+                        if element not in filenames:
+                            filenames.append(element)
 
-    def load_obstacles(self):
-        filenames = []
-        with open(self.objects_filepath, 'r') as f:
-            for iy, ligne in enumerate(csv.reader(f)):
-                for ix, object in enumerate(ligne):
-                    if len(object) > 1:
-                        self.objects[(ix, iy)] = object
-                        if object not in filenames:
-                            filenames.append(object)
-
-        assets.load_multiple_assets(filenames, (TILE_SIZE, TILE_SIZE), 'objects assets')
+        assets.load_multiple_assets(filenames, (TILE_SIZE, TILE_SIZE), f'{filepath_name} assets')

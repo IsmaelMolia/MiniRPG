@@ -33,7 +33,7 @@ class Task:
         return self
 
     def print_loading_bar(self):
-        print(f"\r>>> Loading {self.title + ':':{self.title_len + 1}} [{'#' * int(self.progress * self.bar_len):-<{self.bar_len}}] {round(self.progress * 100, 2):.2f} %   time : {str(self.get_ellapsed_time()) + ' ms':12}", end="", flush=True)
+        print(f"\r>>> Loading {self.title + ' :':{self.title_len + 1}} [{'#' * int(self.progress * self.bar_len):-<{self.bar_len}}] {round(self.progress * 100, 2):.2f} %   time : {str(self.get_ellapsed_time()) + ' ms':12}", end="", flush=True)
         if self.progress >= 1:
             print("\tDone !")
             Task.tasks.pop(self.title, None)

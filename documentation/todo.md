@@ -71,17 +71,20 @@ Chaque TODO à 3 états :
 21. #### [ ] TODO #21:
 * je ne sais pas encore combien d'informations une tile contiendra, mais faut-il la transformer en objet (avec une classe) ?
 * ou faut-il juste stocker quelques informations sur elle ? 
-22. #### [ ] TODO #22:
+22. #### [?] TODO #22:
 * actuellement, les tiles sont stockées dans `self.ground`, qui est une liste de sous-listes, chaque sous-liste étant une rangée de tiles.
 * faut-il remplacer ce système par un dictionnaire (avec les coordonées en clé et la tile en valeur) ?
+> je ne sais toujours pas si il faudrait passer à un dictionnaire, mais cette liste est maintenant stockée dans `self.world_storage['ground']`.
 23. #### [ ] TODO #23:
 * essayer de rendre certains éléments arrondis sur les bords (par exemple, les chemins), comme dans la vidéo de présentation du jeu
-24. #### [ ] TODO #24:
+24. #### [x] TODO #24:
 * dans la classe `World`, les méthodes `load_[insert_name]()` se ressemblent beaucoup. 
 * peut-être faire une seule méthode `load()` qui prend juste en argument le `file_path` et le `loading_bar_title` ?
-25. #### [ ] TODO #25:
+> les méthodes `load_ground()`, `load_decors()` et `load_objects()` ont été remplacées par `load_things()`.
+25. #### [x] TODO #25:
 * dans `rendering`, les méthodes `.render_ground()` et `.render_objects()` sont assez similaires.
 * faire une fonction commune pour éviter de répéter du code ?
+> les méthodes ont été remplacées par `.render_things()`.
 26. #### [ ] TODO #26:
 * que ce soit pour les noms de variables, des fonctions, des classes, des fichiers ou des dossiers, ou que ce soit pour la documentation ou les commenatires,
 * il faudrait choisir une seule langue, et arrêter de mélanger anglais et français.
